@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmokeZone — Seleção Premium</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',system-ui,sans-serif; }
+  body { background:#0d0d12; color:#e8e8f0; }
+
+  /* TELA +18 */
+  .age-modal { position:fixed; inset:0; background:#0d0d12; z-index:99999; display:flex; align-items:center; justify-content:center; padding:20px; }
+  .age-box { background:#15151f; border:1px solid #232334; padding:30px 20px; border-radius:20px; max-width:400px; width:100%; text-align:center; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
+  .age-box h2 { color:#00e0b8; margin-bottom:10px; font-size:1.4rem; }
+  .age-box p { color:#a0a0b8; margin-bottom:20px; font-size:0.9rem; line-height:1.4; }
+  .check-group { display:flex; align-items:flex-start; gap:10px; text-align:left; margin-bottom:15px; font-size:0.85rem; color:#e8e8f0; cursor:pointer; }
+  .check-group input { margin-top:3px; accent-color:#00e0b8; cursor:pointer; width: 18px; height: 18px; }
+  .check-group a { color:#00e0b8; text-decoration:none; font-weight:bold; }
+  .btn-age-enter { width:100%; padding:14px; border:none; border-radius:10px; background:linear-gradient(135deg,#00e0b8,#7c3aed); color:#fff; font-weight:800; font-size:1rem; cursor:pointer; margin-bottom:10px; transition:0.3s; }
+  .btn-age-enter:disabled { background:#23233a; color:#5a5a72; cursor:not-allowed; }
+  .btn-age-exit { width:100%; padding:14px; background:none; border:none; color:#a0a0b8; font-size:0.85rem; cursor:pointer; text-decoration:underline; }
+
+  header { position:sticky; top:0; z-index:100; background:rgba(13,13,18,.95);
+    backdrop-filter:blur(10px); border-bottom:1px solid #1f1f2e; display:flex;
+    align-items:center; justify-content:space-between; padding:16px 24px; }
+  .logo { font-size:1.3rem; font-weight:800; display:flex; align-items:center; gap:8px;
+    background:linear-gradient(90deg,#00e0b8,#7c3aed); -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent; }
+  .logo svg { flex-shrink:0; }
+  .cart-btn { background:linear-gradient(135deg,#00e0b8,#7c3aed); border:none;
+    padding:10px 20px; border-radius:30px; color:#fff; font-weight:700; cursor:pointer;
+    display:flex; align-items:center; gap:8px; }
+  #cart-count { background:#0d0d12; color:#00e0b8; border-radius:50%; padding:2px 8px;
+    font-size:.8rem; font-weight:800; }
+
+  .hero { text-align:center; padding:70px 20px 40px;
+    background:radial-gradient(circle at 50% 0%,rgba(124,58,237,.25),transparent 60%); }
+  .hero h1 { font-size:2.4rem; margin-bottom:14px; line-height:1.15; }
+  .hero h1 span { background:linear-gradient(90deg,#00e0b8,#7c3aed);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .hero p { color:#a0a0b8; max-width:600px; margin:0 auto; }
+
+  .filters { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; padding:20px; position: sticky; top: 65px; background: #0d0d12; z-index: 90; }
+  .filter-btn { background:#1a1a26; border:1px solid #2a2a3a; color:#a0a0b8; padding:9px 20px;
+    border-radius:30px; cursor:pointer; font-weight:600; transition:.3s; }
+  .filter-btn.active, .filter-btn:hover { background:#00e0b8; color:#0d0d12; border-color:#00e0b8; }
+
+  #product-grid { max-width: 1400px; margin: 0 auto 60px; }
+  .brand-section { padding: 0 20px; }
+  .brand-title { font-size: 1.5rem; color: #fff; margin: 30px 0 15px 0; 
+                 border-left: 3px solid #00e0b8; padding-left: 12px; font-weight: 600; letter-spacing: 0.5px; }
+  
+  .products { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+    gap:24px; padding:10px 0 30px 0; }
+  
+  .card { background:#15151f; border:1px solid #232334; border-radius:18px;
+    overflow:hidden; transition:.35s; position:relative; }
+  .card:hover { transform:translateY(-6px); border-color:#00e0b8; }
+  
+  .card-img { height:200px; display:flex; align-items:center; justify-content:center;
+    font-size:4.5rem; background:linear-gradient(135deg,#1a1a2e,#232344); overflow: hidden; }
+  .card-img img { width: 100%; height: 100%; object-fit: contain; padding: 10px; }
+  
+  /* BADGES ELEGANTES */
+  .badge { position:absolute; top:12px; left:12px; padding:5px 12px; border-radius:6px; 
+           font-size:.7rem; font-weight:800; z-index: 2; letter-spacing: 0.5px; backdrop-filter: blur(4px); }
+  
+  .badge.desconto { background: rgba(0, 224, 184, 0.15); color: #00e0b8; border: 1px solid rgba(0, 224, 184, 0.3); }
+  .badge.promo-2x1 { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+  .badge.promo-queima { background: rgba(124, 58, 237, 0.15); color: #a78bfa; border: 1px solid rgba(124, 58, 237, 0.3); }
+
+  .card-body { padding:16px; }
+  .card-body h3 { font-size:1rem; margin-bottom:4px; }
+  .card-body .desc { color:#7a7a92; font-size:.82rem; margin-bottom:12px; height: 35px; overflow: hidden; }
+  
+  .price { font-size:1.3rem; font-weight:800; color:#00e0b8; margin-bottom:12px; display: flex; align-items: center; gap: 8px; }
+  .price small { color:#7a7a92; font-size:.8rem; font-weight:400; text-decoration:line-through; }
+
+  .add-btn { width:100%; padding:11px; border:none; border-radius:10px; background:#23233a;
+    color:#e8e8f0; font-weight:700; cursor:pointer; transition:.3s; }
+  .add-btn:hover { background:linear-gradient(135deg,#00e0b8,#7c3aed); color:#fff; }
+
+  /* CARRINHO */
+  .overlay { position:fixed; inset:0; background:rgba(0,0,0,.7); opacity:0;
+    pointer-events:none; transition:.3s; z-index:200; }
+  .overlay.open { opacity:1; pointer-events:all; }
+
+  .cart-panel { position:fixed; top:0; right:-420px; width:400px; max-width:92vw;
+    height:100vh; background:#12121c; border-left:1px solid #232334; z-index:300;
+    display:flex; flex-direction:column; transition:right .35s; }
+  .cart-panel.open { right:0; }
+  .cart-header { display:flex; justify-content:space-between; align-items:center;
+    padding:20px; border-bottom:1px solid #232334; }
+  .close-btn { background:none; border:none; color:#a0a0b8; font-size:1.5rem; cursor:pointer; }
+  .cart-items { flex:1; overflow-y:auto; padding:16px; }
+  .cart-item { display:flex; gap:12px; padding:12px 0; border-bottom:1px solid #1f1f2e; }
+  .cart-item .thumb { width:50px; height:50px; background:#23233a; border-radius:10px;
+    display:flex; align-items:center; justify-content:center; font-size:1.4rem; flex-shrink:0; overflow: hidden;}
+  .cart-item .thumb img { width: 100%; height: 100%; object-fit: contain; }
+  .cart-item .info { flex:1; }
+  .cart-item .info h4 { font-size:.9rem; margin-bottom:4px; }
+  .cart-item .p { color:#00e0b8; font-weight:700; font-size:.9rem; }
+  .cart-item .promo-alert { color: #f59e0b; font-size: 0.7rem; font-weight: bold; margin-top: 2px; }
+  
+  .qty { display:flex; align-items:center; gap:8px; margin-top:6px; }
+  .qty button { background:#23233a; border:none; color:#fff; width:24px; height:24px;
+    border-radius:6px; cursor:pointer; font-weight:700; }
+  .remove { background:none; border:none; color:#ef4444; cursor:pointer; font-size:.75rem; margin-top:6px; }
+  .cart-footer { padding:20px; border-top:1px solid #232334; }
+  .total-row { display:flex; justify-content:space-between; font-size:1.15rem;
+    font-weight:800; margin-bottom:16px; }
+  .total-row span:last-child { color:#00e0b8; }
+  .checkout-btn { width:100%; padding:15px; border:none; border-radius:12px;
+    background:linear-gradient(135deg,#00e0b8,#7c3aed); color:#fff; font-weight:800;
+    font-size:1rem; cursor:pointer; }
+  .empty { text-align:center; color:#5a5a72; padding:40px 0; }
+
+  /* MODAL CHECKOUT */
+  .modal { position:fixed; inset:0; background:rgba(0,0,0,.8); z-index:400;
+    display:none; align-items:center; justify-content:center; padding:20px; overflow-y:auto; }
+  .modal.open { display:flex; }
+  .modal-box { background:#12121c; border:1px solid #232334; border-radius:20px;
+    width:100%; max-width:520px; max-height:90vh; overflow-y:auto; }
+  .modal-header { display:flex; justify-content:space-between; align-items:center;
+    padding:20px; border-bottom:1px solid #232334; position:sticky; top:0;
+    background:#12121c; z-index:1; }
+  .modal-header h2 { font-size:1.1rem; }
+  .steps { display:flex; gap:6px; padding:16px 20px; border-bottom:1px solid #232334; }
+  .step { flex:1; text-align:center; font-size:.72rem; color:#5a5a72; font-weight:700;
+    padding:8px 4px; border-radius:8px; background:#1a1a26; }
+  .step.active { background:linear-gradient(135deg,#00e0b8,#7c3aed); color:#fff; }
+  .step.done { background:#00e0b8; color:#0d0d12; }
+  .step-content { padding:20px; display:none; }
+  .step-content.active { display:block; }
+  .form-group { margin-bottom:14px; }
+  .form-group label { display:block; font-size:.82rem; color:#a0a0b8;
+    margin-bottom:6px; font-weight:600; }
+  .form-group input { width:100%; padding:12px 14px; background:#1a1a26;
+    border:1px solid #2a2a3a; border-radius:10px; color:#e8e8f0; font-size:.95rem; }
+  .form-group input:focus { outline:none; border-color:#00e0b8; }
+  .row { display:flex; gap:10px; }
+  .row > .form-group { flex:1; }
+  .row .small { flex:0 0 110px; }
+  .nav-btns { display:flex; gap:10px; margin-top:20px; }
+  .btn-back { flex:1; padding:13px; background:#1a1a26; border:1px solid #2a2a3a;
+    color:#e8e8f0; border-radius:10px; font-weight:700; cursor:pointer; }
+  .btn-next { flex:2; padding:13px; background:linear-gradient(135deg,#00e0b8,#7c3aed);
+    border:none; color:#fff; border-radius:10px; font-weight:800; cursor:pointer; }
+  .btn-next:disabled { opacity: 0.7; cursor: not-allowed; }
+
+  .resumo { background:#1a1a26; border-radius:12px; padding:14px; margin-bottom:16px;
+    font-size:.85rem; }
+  .resumo-linha { display:flex; justify-content:space-between; margin-bottom:8px; color:#a0a0b8; }
+  .resumo-linha.total { color:#00e0b8; font-weight:800; font-size:1rem;
+    border-top:1px solid #2a2a3a; padding-top:10px; margin-top:6px; }
+  
+  .info-box { background:#1f1a2e; border:1px solid #3a2a5a; border-radius:10px;
+    padding:12px; font-size:.8rem; color:#b8a8d8; margin-bottom:14px; line-height:1.5; }
+  .info-box strong { color:#00e0b8; }
+
+  #tela-qrcode { text-align: center; }
+  #img-qrcode { width: 220px; height: 220px; border-radius: 12px; background: #fff; padding: 10px; margin: 15px auto; display: block; }
+  #pix-copia-cola { font-size: 0.75rem; text-align: center; color: #a0a0b8; }
+  .btn-copy { width: 100%; padding: 12px; background: #23233a; border: 1px solid #00e0b8; color: #00e0b8; border-radius: 10px; font-weight: 700; cursor: pointer; margin-bottom: 15px; transition: 0.3s; }
+  .btn-copy:hover { background: #00e0b8; color: #0d0d12; }
+  @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+  #status-pagamento { color: #f59e0b; font-weight: bold; font-size: 0.9rem; animation: pulse 1.5s infinite; margin-top: 10px; }
+
+  footer { text-align:center; padding:30px 20px; border-top:1px solid #1f1f2e;
+    color:#5a5a72; font-size:.85rem; }
+  footer .brand { color:#00e0b8; font-weight:700; }
+
+  @media(max-width:600px) {
+    .hero h1 { font-size:1.8rem; }
+    .products { padding:10px 0; gap:16px; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); }
+    .card-img { height:150px; font-size:3.5rem; }
+    .row { flex-direction:column; gap:0; }
+    .row .small { flex:1; }
+    .filters { top: 60px; }
+    .brand-title { font-size: 1.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TELA +18 -->
+<div class="age-modal" id="age-modal">
+  <div class="age-box">
+    <h2>Verificação de Idade</h2>
+    <p>Este site contém produtos destinados <strong>exclusivamente a maiores de 18 anos</strong>.</p>
+    <label class="check-group">
+      <input type="checkbox" id="check-18" onchange="validarAcesso()">
+      <span>Confirmo que tenho 18 anos ou mais.</span>
+    </label>
+    <label class="check-group">
+      <input type="checkbox" id="check-terms" onchange="validarAcesso()">
+      <span>Li e aceito os <a href="#" onclick="alert('Termos de Uso')">Termos de Uso</a> e a Política de Privacidade.</span>
+    </label>
+    <button class="btn-age-enter" id="btn-entrar" disabled onclick="entrarSite()">Entrar no Site</button>
+    <button class="btn-age-exit" onclick="sairSite()">Não tenho 18 anos (Sair)</button>
+  </div>
+</div>
+
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 100 100" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+      <defs><linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00e0b8"/><stop offset="100%" stop-color="#7c3aed"/></linearGradient></defs>
+      <rect x="32" y="40" width="38" height="52" rx="7" fill="url(#lg)"/>
+      <rect x="42" y="28" width="18" height="14" rx="4" fill="url(#lg)"/>
+      <circle cx="51" cy="80" r="3" fill="#0d0d12"/>
+    </svg>
+    SMOKEZONE
+  </div>
+  <button class="cart-btn" onclick="openCart()">🛒 <span id="cart-count">0</span></button>
+</header>
+
+<section class="hero">
+  <h1>Seleção <span>Premium</span></h1>
+  <p>Os melhores dispositivos com condições especiais por tempo limitado.</p>
+</section>
+
+<div class="filters">
+  <button class="filter-btn active" onclick="filterProducts('all',this)">Todos os Produtos</button>
+  <button class="filter-btn" onclick="filterProducts('elfbar',this)">Elfbar</button>
+  <button class="filter-btn" onclick="filterProducts('ignite',this)">Ignite</button>
+</div>
+
+<div id="product-grid"></div>
+
+<div class="overlay" id="overlay" onclick="closeCart()"></div>
+
+<div class="cart-panel" id="cart-panel">
+  <div class="cart-header">
+    <h2>Seu Carrinho</h2>
+    <button class="close-btn" onclick="closeCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cart-items"></div>
+  <div class="cart-footer">
+    <div class="total-row"><span>Total:</span><span id="cart-total">R$ 0,00</span></div>
+    <button class="checkout-btn" onclick="openCheckout()">Finalizar Compra →</button>
+  </div>
+</div>
+
+<div class="modal" id="checkout-modal">
+  <div class="modal-box">
+    <div class="modal-header"><h2>Finalizar Pedido</h2><button class="close-btn" onclick="closeCheckout()">✕</button></div>
+    <div class="steps">
+      <div class="step active" data-step="1">1. Dados</div>
+      <div class="step" data-step="2">2. Endereço</div>
+      <div class="step" data-step="3">3. Pagamento</div>
+    </div>
+    <div class="step-content active" id="step-1">
+      <div class="form-group"><label>Nome completo *</label><input type="text" id="nome" placeholder="João da Silva"></div>
+      <div class="row">
+        <div class="form-group"><label>CPF *</label><input type="text" id="cpf" placeholder="000.000.000-00" maxlength="14" oninput="maskCPF(this)"></div>
+        <div class="form-group"><label>Telefone *</label><input type="tel" id="telefone" placeholder="(11) 99999-9999" maxlength="15" oninput="maskTel(this)"></div>
+      </div>
+      <div class="form-group"><label>E-mail *</label><input type="email" id="email" placeholder="voce@email.com"></div>
+      <div class="nav-btns"><button class="btn-next" onclick="irParaEtapa(2)">Continuar →</button></div>
+    </div>
+    <div class="step-content" id="step-2">
+      <div class="form-group"><label>CEP *</label><input type="text" id="cep" placeholder="00000-000" maxlength="9" oninput="maskCEP(this)" onblur="buscarCEP()"></div>
+      <div class="form-group"><label>Rua / Logradouro *</label><input type="text" id="rua" placeholder="Rua das Flores"></div>
+      <div class="row">
+        <div class="form-group small"><label>Número *</label><input type="text" id="numero" placeholder="123"></div>
+        <div class="form-group"><label>Complemento</label><input type="text" id="complemento" placeholder="Apto 45"></div>
+      </div>
+      <div class="form-group"><label>Bairro *</label><input type="text" id="bairro" placeholder="Centro"></div>
+      <div class="row">
+        <div class="form-group"><label>Cidade *</label><input type="text" id="cidade" placeholder="São Paulo"></div>
+        <div class="form-group small"><label>UF *</label><input type="text" id="uf" placeholder="SP" maxlength="2"></div>
+      </div>
+      <div class="nav-btns">
+        <button class="btn-back" onclick="irParaEtapa(1)">← Voltar</button>
+        <button class="btn-next" onclick="irParaEtapa(3)">Continuar →</button>
+      </div>
+    </div>
+    <div class="step-content" id="step-3">
+      <div id="tela-pagamento-inicial">
+        <div class="resumo" id="resumo-pedido"></div>
+        <div class="info-box"><strong>💠 Pagamento via PIX</strong><br>O QR Code será gerado na próxima tela. Após pagar, seu pedido será aprovado automaticamente.</div>
+        <div class="nav-btns">
+          <button class="btn-back" onclick="irParaEtapa(2)">← Voltar</button>
+          <button class="btn-next" onclick="gerarPix()" id="btn-gerar-pix">Gerar QR Code PIX →</button>
+        </div>
+      </div>
+      <div id="tela-qrcode" style="display:none;">
+        <h3 style="margin-bottom: 5px; color: #00e0b8;">Pague com PIX</h3>
+        <p style="font-size: 0.85rem; color: #a0a0b8;">Abra o app do seu banco e escaneie:</p>
+        <img id="img-qrcode" src="" alt="Carregando QR Code...">
+        <div class="form-group"><label>Código Copia e Cola:</label><input type="text" id="pix-copia-cola" readonly></div>
+        <button class="btn-copy" onclick="copiarPix()">Copiar Código PIX</button>
+        <div id="status-pagamento">⏳ Aguardando pagamento...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>© 2026 <span class="brand">SmokeZone</span> — Venda proibida para menores de 18 anos.</footer>
+
+<script>
+/* ===== LÓGICA +18 ===== */
+function validarAcesso() {
+  const is18 = document.getElementById('check-18').checked;
+  const isTerms = document.getElementById('check-terms').checked;
+  document.getElementById('btn-entrar').disabled = !(is18 && isTerms);
+}
+function entrarSite() {
+  sessionStorage.setItem('maiorDeIdade', 'true');
+  document.getElementById('age-modal').style.display = 'none';
+}
+function sairSite() { window.location.href = 'https://www.google.com'; }
+window.onload = function() {
+  if (sessionStorage.getItem('maiorDeIdade') === 'true') {
+    document.getElementById('age-modal').style.display = 'none';
+  }
+};
+
+/* ============ CATÁLOGO ============ */
+const produtos = [
+  // ===== ELFBAR =====
+  { id:1, marca:"elfbar", nome:"Elfbar BC10000", desc:"10.000 puffs • Melancia, Menta", preco:53.40, antigo:89.00, img:"https://elfbar.ae/cdn/shop/files/0618_1200x1200.png?v=1720427829", badge:"40% OFF", tipoBadge:"desconto" },
+  { id:2, marca:"elfbar", nome:"Elfbar BC15000", desc:"15.000 puffs • Morango, Blueberry", preco:53.99, antigo:89.99, img:"https://i.imgur.com/qF0aG8d.jpeg", badge:"40% OFF", tipoBadge:"desconto" },
+  { id:3, marca:"elfbar", nome:"Elfbar EW9000", desc:"9.000 puffs (Refil/Kit) • Cool Mint", preco:51.25, antigo:85.41, img:"https://www.primevapehub.com/wp-content/uploads/2025/12/20251221_519017.webp", badge:"Últimas Unidades", tipoBadge:"queima" },
+  { id:4, marca:"elfbar", nome:"Elfbar GH23000", desc:"23.000 puffs • Cotton Candy, Menta", preco:70.79, antigo:117.99, img:"https://vozolpuff.de/wp-content/uploads/2026/03/Watermelon-Ice-4.png", badge:"40% OFF", tipoBadge:"desconto" },
+  { id:5, marca:"elfbar", nome:"Elfbar TE30000", desc:"30.000 puffs • Blue Razz Lemonade", preco:75.59, antigo:125.99, img:"https://mundovape.net/wp-content/uploads/2026/04/Elf-Bar-TE-30k-Pineapple-Mango.png", badge:"40% OFF", tipoBadge:"desconto" },
+  
+  // --- ITENS CAROS COM "LEVE 2 PAGUE 1" ---
+  { id:6, marca:"elfbar", nome:"Elfbar Duke 35K", desc:"35.000 puffs • Watermelon Ice", preco:80.39, antigo:133.99, img:"https://i.imgur.com/qF0aG8d.jpeg", badge:"Leve 2, Pague 1", tipoBadge:"2x1", promo2x1: true },
+  { id:7, marca:"elfbar", nome:"Elfbar Ice King 40K", desc:"40.000 puffs • Miami Mint", preco:84.04, antigo:140.06, img:"https://i.imgur.com/qF0aG8d.jpeg", badge:"Leve 2, Pague 1", tipoBadge:"2x1", promo2x1: true },
+  { id:8, marca:"elfbar", no
